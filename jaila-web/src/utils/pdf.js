@@ -153,22 +153,49 @@ export function buildInvoiceHtml(inv, profile = {}) {
 </body></html>`
 }
 
+function pdfWorker(inv, elementOrProfile) {
+  const customerName = (inv.customer?.name ?? 'Customer').replace(/[^a-z0-9 \-_]/gi, '').trim()
+  const filename     = `${inv.num} - ${customerName}.pdf`
+  const isElement    = elementOrProfile instanceof Element
+  const source       = isElement ? elementOrProfile : buildInvoiceHtml(inv, elementOrProfile ?? {})
+  return { filename, source, isElement }
+}
+
 export async function downloadInvoice(inv, elementOrProfile) {
   const html2pdf = (await import('html2pdf.js')).default
-  const customerName = (inv.customer?.name ?? 'Customer').replace(/[^a-z0-9 \-_]/gi, '').trim()
-  const filename = `${inv.num} - ${customerName}.pdf`
-
-  // Accept either a DOM element or a profile object (falls back to HTML string)
-  const isElement = elementOrProfile instanceof Element
-  const source = isElement ? elementOrProfile : buildInvoiceHtml(inv, elementOrProfile ?? {})
-
+  const { filename, source, isElement } = pdfWorker(inv, elementOrProfile)
   await html2pdf()
     .set({
-      margin: [8, 8, 8, 8],
-      filename,
+      margin: [8, 8, 8, 8], filename,
       html2canvas: { scale: 2, useCORS: true, allowTaint: false, logging: false, backgroundColor: '#ffffff' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     })
     .from(source, isElement ? undefined : 'string')
     .save()
+}
+
+export async function shareInvoicePDF(inv, elementOrProfile) {
+  const html2pdf = (await import('html2pdf.js')).default
+  const { filename, source, isElement } = pdfWorker(inv, elementOrProfile)
+  const blob = await html2pdf()
+    .set({
+      margin: [8, 8, 8, 8], filename,
+      html2canvas: { scale: 2, useCORS: true, allowTaint: false, logging: false, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    })
+    .from(source, isElement ? undefined : 'string')
+    .outputPdf('blob')
+
+  const file = new File([blob], filename, { type: 'application/pdf' })
+
+  if (navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ files: [file], title: filename, text: `Invoice ${inv.num} — ${inv.customer?.name}` })
+  } else {
+    // Desktop fallback: download the PDF and open WhatsApp text
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click()
+    URL.revokeObjectURL(url)
+    const msg = `Hello ${inv.customer?.name}, please find your invoice ${inv.num} attached. Amount: ${inv.total}. Thank you!`
+    setTimeout(() => window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank'), 500)
+  }
 }

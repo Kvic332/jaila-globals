@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { getInvoice, updateInvoiceStatus, deleteInvoice, sendInvoiceEmail, getProfile } from '../lib/supabase'
 import { C, Card, Badge, Btn, Modal, Field, toast } from '../components/ui'
 import { fmt, fmtD } from '../utils/format'
-import { printInvoice } from '../utils/pdf'
+import { downloadInvoice } from '../utils/pdf'
 
 export default function InvoiceDetail() {
   const { id }   = useParams()
@@ -66,14 +66,14 @@ export default function InvoiceDetail() {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <Btn variant="outline" icon="📧" onClick={() => setEmailModal(true)}>Email</Btn>
-          <Btn variant="primary" icon="🖨" onClick={() => printInvoice(invoice, profile)}>Print / PDF</Btn>
+          <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))}>Download PDF</Btn>
           <Btn variant="danger" icon="🗑" onClick={doDelete}>Delete</Btn>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
         {/* Invoice card */}
-        <div>
+        <div id="invoice-capture">
           {/* Top banner */}
           <div style={{ background: C.navy, borderRadius: '12px 12px 0 0', padding: '24px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -200,7 +200,7 @@ export default function InvoiceDetail() {
           <Card>
             <div style={{ fontSize: 12, fontWeight: 700, color: C.ink4, textTransform: 'uppercase', letterSpacing: .6, marginBottom: 14 }}>Actions</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <Btn variant="primary" icon="🖨" onClick={() => printInvoice(invoice, profile)} style={{ width: '100%' }}>Print / Save PDF</Btn>
+              <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))} style={{ width: '100%' }}>Print / Save PDF</Btn>
               <Btn variant="outline" icon="📧" onClick={() => setEmailModal(true)} style={{ width: '100%' }}>Email to Customer</Btn>
               <Btn variant="danger" icon="🗑" onClick={doDelete} style={{ width: '100%' }}>Delete Invoice</Btn>
             </div>

@@ -53,8 +53,10 @@ export function buildInvoiceHtml(inv, profile = {}) {
   .bank label { font-size: 10px; color: #9CA3AF; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; display: block; margin-bottom: 6px; }
   .bank .val   { font-size: 13px; color: #374151; line-height: 1.7; }
   .sigs { padding: 36px 40px 40px; display: flex; justify-content: space-between; }
+  @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
   .sig-box { width: 210px; }
-  .sig-line { border-bottom: 1px solid #D1D5DB; height: 40px; margin-bottom: 6px; }
+  .sig-name { font-family: 'Dancing Script', cursive; font-size: 28px; color: #0A1628; line-height: 1.1; margin-bottom: 2px; }
+  .sig-line { border-bottom: 1px solid #D1D5DB; height: 10px; margin-bottom: 6px; }
   .sig-label { font-size: 11px; color: #9CA3AF; }
   .footer { padding: 16px 40px; border-top: 1px solid #F0F0F0; text-align: center; font-size: 11px; color: #D1D5DB; }
   @media print {
@@ -136,6 +138,7 @@ export function buildInvoiceHtml(inv, profile = {}) {
 
   <div class="sigs">
     <div class="sig-box">
+      <div class="sig-name">${co}</div>
       <div class="sig-line"></div>
       <div class="sig-label">Authorized Signature — ${co}</div>
     </div>

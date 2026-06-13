@@ -201,12 +201,16 @@ export default function InvoiceDetail() {
 
           {/* Signatures */}
           <div style={{ background: C.white, borderRadius: '0 0 12px 12px', padding: '24px 28px 28px', display: 'flex', justifyContent: 'space-between', border: `1px solid ${C.surface3}`, borderTop: 'none' }}>
-            {[`Authorized Signature — ${co}`, `Customer Signature — ${invoice.customer.name}`].map(l => (
-              <div key={l} style={{ width: 200 }}>
-                <div style={{ borderBottom: `1px solid ${C.surface3}`, height: 40, marginBottom: 6 }} />
-                <div style={{ fontSize: 11, color: C.ink4 }}>{l}</div>
-              </div>
-            ))}
+            <div style={{ width: 200 }}>
+              <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: 28, color: C.navy, lineHeight: 1.1, marginBottom: 2 }}>{co}</div>
+              <div style={{ borderBottom: `1px solid ${C.surface3}`, height: 10, marginBottom: 6 }} />
+              <div style={{ fontSize: 11, color: C.ink4 }}>Authorized Signature — {co}</div>
+            </div>
+            <div style={{ width: 200 }}>
+              <div style={{ height: 38, marginBottom: 2 }} />
+              <div style={{ borderBottom: `1px solid ${C.surface3}`, height: 10, marginBottom: 6 }} />
+              <div style={{ fontSize: 11, color: C.ink4 }}>Customer Signature — {invoice.customer.name}</div>
+            </div>
           </div>
         </div>
 

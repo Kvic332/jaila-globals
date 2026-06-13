@@ -68,7 +68,7 @@ export function buildInvoiceHtml(inv, profile = {}) {
   <div class="header">
     <div>
       ${profile.logo_url
-        ? `<img src="${profile.logo_url}" height="48" style="border-radius:8px" alt="${co}">`
+        ? `<img src="${profile.logo_url}" style="height:56px;width:auto;max-width:140px;object-fit:contain;border-radius:8px;display:block;margin-bottom:8px" alt="${co}">`
         : `<div style="width:48px;height:48px;background:#D4A849;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#0A1628">${co.charAt(0)}</div>`}
       <div class="co-name">${co}</div>
       <div class="co-sub">${[profile.address, profile.phone, profile.email].filter(Boolean).join(' · ')}</div>

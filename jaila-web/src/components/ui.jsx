@@ -1,3 +1,5 @@
+import React from 'react'
+
 // ── Design tokens ─────────────────────────────────────────────
 export const C = {
   navy:    '#0A1628',
@@ -196,7 +198,6 @@ export const toast = {
 }
 
 // ── Global keyframe styles ─────────────────────────────────────
-import React from 'react'
 export function GlobalStyles() {
   return (
     <style>{`

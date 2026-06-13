@@ -40,8 +40,11 @@ export default function Auth() {
       <div style={{ width: '100%', maxWidth: 400 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ width: 64, height: 64, backgroundColor: C.gold, borderRadius: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <span style={{ fontSize: 28, fontWeight: 800, color: C.navy, fontFamily: "'DM Serif Display', serif" }}>J</span>
+          <div style={{ width: 80, height: 80, borderRadius: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, overflow: 'hidden', background: C.gold }}>
+            <img src="/logo.png" alt="Jaila Globals"
+              style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 20 }}
+              onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }} />
+            <span style={{ display: 'none', fontSize: 32, fontWeight: 800, color: C.navy, fontFamily: "'DM Serif Display', serif", width: 80, height: 80, alignItems: 'center', justifyContent: 'center' }}>J</span>
           </div>
           <h1 style={{ fontSize: 28, fontWeight: 700, color: C.white, fontFamily: "'DM Serif Display', serif", letterSpacing: -.5, lineHeight: 1.1 }}>Jaila Globals</h1>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', marginTop: 6 }}>Invoice & Inventory Suite</p>

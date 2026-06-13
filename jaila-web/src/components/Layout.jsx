@@ -4,10 +4,12 @@ import { supabase, getProfile, signOut } from '../lib/supabase'
 import { C } from './ui'
 
 const navItems = [
-  { to: '/',         icon: '🏠', label: 'Dashboard'  },
-  { to: '/new',      icon: '➕', label: 'New Invoice' },
-  { to: '/history',  icon: '📋', label: 'History'    },
-  { to: '/settings', icon: '⚙️', label: 'Settings'   },
+  { to: '/',          icon: '🏠', label: 'Dashboard'  },
+  { to: '/new',       icon: '➕', label: 'New Invoice' },
+  { to: '/history',   icon: '📋', label: 'History'    },
+  { to: '/customers', icon: '👥', label: 'Customers'  },
+  { to: '/inventory', icon: '📦', label: 'Inventory'  },
+  { to: '/settings',  icon: '⚙️', label: 'Settings'   },
 ]
 
 function useIsMobile() {

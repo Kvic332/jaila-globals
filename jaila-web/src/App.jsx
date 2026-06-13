@@ -10,6 +10,8 @@ import CreateInvoice from './pages/CreateInvoice'
 import InvoiceDetail from './pages/InvoiceDetail'
 import History       from './pages/History'
 import Settings      from './pages/Settings'
+import Customers     from './pages/Customers'
+import Inventory     from './pages/Inventory'
 
 function PrivateRoute({ children }) {
   const [session, setSession] = useState(undefined)
@@ -44,6 +46,8 @@ export default function App() {
         <Route path="/new" element={<PrivateRoute><CreateInvoice /></PrivateRoute>} />
         <Route path="/invoice/:id" element={<PrivateRoute><InvoiceDetail /></PrivateRoute>} />
         <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
+        <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
+        <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

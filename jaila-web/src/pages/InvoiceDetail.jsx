@@ -91,6 +91,10 @@ export default function InvoiceDetail() {
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {!isMobile && <Btn variant="outline" icon="📧" onClick={() => setEmailModal(true)}>Email</Btn>}
+          <Btn variant="outline" icon="💬" onClick={() => {
+            const msg = `Hello ${invoice.customer.name}, please find your invoice ${invoice.num} for ${fmt(invoice.total)} from ${co}. Due: ${fmtD(invoice.due)}. Thank you!`
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+          }}>{isMobile ? 'WA' : 'WhatsApp'}</Btn>
           <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))}>{isMobile ? 'PDF' : 'Download PDF'}</Btn>
           {!isMobile && <Btn variant="danger" icon="🗑" onClick={doDelete}>Delete</Btn>}
         </div>

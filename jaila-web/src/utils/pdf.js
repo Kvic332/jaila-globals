@@ -166,7 +166,7 @@ export async function downloadInvoice(inv, elementOrProfile) {
     .set({
       margin: [8, 8, 8, 8],
       filename,
-      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+      html2canvas: { scale: 2, useCORS: true, allowTaint: false, logging: false, backgroundColor: '#ffffff' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     })
     .from(source, isElement ? undefined : 'string')

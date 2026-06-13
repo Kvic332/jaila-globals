@@ -43,11 +43,11 @@ export default function Settings() {
   const handleLogoChange = async e => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 2 * 1024 * 1024) { toast.error('Logo must be under 2MB'); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Logo must be under 5MB'); return }
     setUploading(true)
     try {
       const url = await uploadLogo(file)
-      setLogoUrl(url + '?t=' + Date.now())
+      setLogoUrl(url + '?v=' + Date.now())
       toast.success('Logo uploaded!')
     } catch (e) { toast.error(e.message) }
     finally { setUploading(false) }
@@ -75,7 +75,7 @@ export default function Settings() {
             <Btn variant="outline" loading={uploading} onClick={() => fileRef.current?.click()} icon="📷">
               {uploading ? 'Uploading…' : 'Upload Logo'}
             </Btn>
-            <p style={{ fontSize: 12, color: C.ink4, marginTop: 6 }}>PNG, JPG or SVG · max 2MB · recommended 400×400px</p>
+            <p style={{ fontSize: 12, color: C.ink4, marginTop: 6 }}>PNG, JPG or SVG · max 5MB · recommended 400×400px</p>
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleLogoChange} style={{ display: 'none' }} />
         </div>

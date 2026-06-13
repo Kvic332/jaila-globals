@@ -110,7 +110,7 @@ export default function Layout({ children }) {
             ...(collapsed ? { margin: '0 auto' } : {}),
           }}>
             {profile?.logo_url
-              ? <img src={profile.logo_url} alt="" style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover' }} />
+              ? <img src={profile.logo_url} alt="" crossOrigin="anonymous" style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover' }} />
               : initial}
           </div>
           {!collapsed && (

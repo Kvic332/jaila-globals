@@ -58,8 +58,9 @@ export async function uploadLogo(file) {
   const { error: upErr } = await supabase.storage.from('logos').upload(path, file, { upsert: true, contentType: file.type })
   handleError('uploadLogo', upErr)
   const { data } = supabase.storage.from('logos').getPublicUrl(path)
-  await updateProfile({ logo_url: data.publicUrl })
-  return data.publicUrl
+  const url = data.publicUrl.split('?')[0] // strip old cache params
+  await updateProfile({ logo_url: url })
+  return url
 }
 
 // ── Invoices ──────────────────────────────────────────────────

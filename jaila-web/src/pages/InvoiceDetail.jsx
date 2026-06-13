@@ -107,7 +107,7 @@ export default function InvoiceDetail() {
           <div style={{ background: C.navy, borderRadius: '12px 12px 0 0', padding: '24px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               {profile?.logo_url
-                ? <img src={profile.logo_url} height={38} style={{ borderRadius: 7, marginBottom: 10 }} alt="" />
+                ? <img src={profile.logo_url} height={38} style={{ borderRadius: 7, marginBottom: 10 }} alt="" crossOrigin="anonymous" />
                 : <div style={{ width: 38, height: 38, background: C.gold, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 700, color: C.navy, marginBottom: 10 }}>{co.charAt(0)}</div>}
               <div style={{ fontSize: 15, fontWeight: 700, color: C.white }}>{co}</div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 1 }}>{profile?.address}</div>

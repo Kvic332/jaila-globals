@@ -150,10 +150,14 @@ export function buildInvoiceHtml(inv, profile = {}) {
 </body></html>`
 }
 
-export async function downloadInvoice(inv, element) {
+export async function downloadInvoice(inv, elementOrProfile) {
   const html2pdf = (await import('html2pdf.js')).default
   const customerName = (inv.customer?.name ?? 'Customer').replace(/[^a-z0-9 \-_]/gi, '').trim()
   const filename = `${inv.num} - ${customerName}.pdf`
+
+  // Accept either a DOM element or a profile object (falls back to HTML string)
+  const isElement = elementOrProfile instanceof Element
+  const source = isElement ? elementOrProfile : buildInvoiceHtml(inv, elementOrProfile ?? {})
 
   await html2pdf()
     .set({
@@ -162,6 +166,6 @@ export async function downloadInvoice(inv, element) {
       html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     })
-    .from(element)
+    .from(source, isElement ? undefined : 'string')
     .save()
 }

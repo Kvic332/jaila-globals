@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { saveInvoice, nextInvoiceNumber, getProfile } from '../lib/supabase'
 import { C, Card, Btn, Field, Select, toast } from '../components/ui'
 import { fmt, today } from '../utils/format'
-import { printInvoice } from '../utils/pdf'
+import { downloadInvoice } from '../utils/pdf'
 
 export default function CreateInvoice() {
   const [custName, setCustName]     = useState('')
@@ -173,7 +173,7 @@ export default function CreateInvoice() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: `1px solid ${C.surface3}`, position: 'sticky', top: 0, background: C.white, zIndex: 1 }}>
               <span style={{ fontWeight: 700, fontSize: 15 }}>Invoice Preview — {invNum}</span>
               <div style={{ display: 'flex', gap: 10 }}>
-                <Btn variant="primary" icon="🖨" onClick={() => printInvoice(invoiceObj, profile)}>Print / Save PDF</Btn>
+                <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoiceObj, profile)}>Download PDF</Btn>
                 <button onClick={() => setPreview(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: C.ink3 }}>×</button>
               </div>
             </div>

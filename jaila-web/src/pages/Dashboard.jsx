@@ -42,6 +42,77 @@ function QuoteCard({ isMobile }) {
   )
 }
 
+function RevenueChart({ invoices, isMobile }) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const year = new Date().getFullYear()
+
+  const data = months.map((m, i) => {
+    const monthInvs = invoices.filter(inv => {
+      const d = new Date(inv.date)
+      return d.getFullYear() === year && d.getMonth() === i
+    })
+    return {
+      label: m,
+      revenue: monthInvs.filter(inv => inv.status === 'paid').reduce((s, inv) => s + inv.total, 0),
+      billed:  monthInvs.reduce((s, inv) => s + inv.total, 0),
+    }
+  })
+
+  const maxVal = Math.max(...data.map(d => d.billed), 1)
+  const barW   = isMobile ? 18 : 28
+  const chartH = isMobile ? 120 : 160
+  const totalW = months.length * (barW + (isMobile ? 8 : 14)) + (isMobile ? 8 : 14)
+
+  return (
+    <Card style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>{year} Revenue Overview</h2>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <span style={{ fontSize: 11, color: C.ink4, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: C.navy, display: 'inline-block' }} /> Billed
+          </span>
+          <span style={{ fontSize: 11, color: C.ink4, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: C.gold, display: 'inline-block' }} /> Paid
+          </span>
+        </div>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? 8 : 14, height: chartH + 32, paddingLeft: isMobile ? 8 : 14, minWidth: totalW }}>
+          {data.map((d, i) => {
+            const billedH  = d.billed  > 0 ? Math.max(4, (d.billed  / maxVal) * chartH) : 0
+            const revenueH = d.revenue > 0 ? Math.max(4, (d.revenue / maxVal) * chartH) : 0
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <div style={{ position: 'relative', width: barW, height: chartH, display: 'flex', alignItems: 'flex-end' }}>
+                  {/* Billed bar (background) */}
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, width: barW, height: billedH, background: `${C.navy}30`, borderRadius: '4px 4px 0 0' }} />
+                  {/* Paid bar (foreground) */}
+                  <div title={`Paid: ${fmt(d.revenue)}`} style={{ position: 'absolute', bottom: 0, left: 0, width: barW, height: revenueH, background: `linear-gradient(180deg, ${C.gold} 0%, ${C.gold2} 100%)`, borderRadius: '4px 4px 0 0', transition: 'height .3s' }} />
+                </div>
+                <span style={{ fontSize: isMobile ? 9 : 10, color: C.ink4, fontWeight: 600 }}>{d.label}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      <div style={{ marginTop: 12, display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: 10, color: C.ink4, textTransform: 'uppercase', letterSpacing: .5 }}>Total Billed {year}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.ink }}>{fmt(data.reduce((s, d) => s + d.billed, 0))}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: C.ink4, textTransform: 'uppercase', letterSpacing: .5 }}>Total Collected {year}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.gold }}>{fmt(data.reduce((s, d) => s + d.revenue, 0))}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: C.ink4, textTransform: 'uppercase', letterSpacing: .5 }}>Outstanding</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.rose2 }}>{fmt(data.reduce((s, d) => s + d.billed - d.revenue, 0))}</div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 function DueDateAlerts({ invoices, navigate, isMobile }) {
   const today = new Date(); today.setHours(0,0,0,0)
   const alerts = invoices.filter(inv => {
@@ -135,6 +206,9 @@ export default function Dashboard() {
         <StatCard label="Overdue" value={stats.overdue} accent={C.rose2} icon="⚠️" />
         <StatCard label="Revenue (Paid)" value={loading ? '—' : fmt(stats.revenue)} accent={C.navy} icon="💰" />
       </div>
+
+      {/* Revenue chart */}
+      {!loading && <RevenueChart invoices={allInvs} isMobile={isMobile} />}
 
       {/* Quick create */}
       <div onClick={() => navigate('/new')}

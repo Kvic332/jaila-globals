@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { getInvoice, updateInvoiceStatus, deleteInvoice, sendInvoiceEmail, getProfile } from '../lib/supabase'
-import { C, Card, Badge, Btn, Modal, Field, toast } from '../components/ui'
+import { getInvoice, updateInvoiceStatus, deleteInvoice, sendInvoiceEmail, getProfile, getPayments, addPayment } from '../lib/supabase'
+import { C, Card, Badge, Btn, Modal, Field, Select, toast } from '../components/ui'
 import { fmt, fmtD } from '../utils/format'
 import { downloadInvoice } from '../utils/pdf'
 
@@ -10,16 +10,24 @@ export default function InvoiceDetail() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const [invoice, setInvoice]     = useState(location.state?.invoice ?? null)
-  const [profile, setProfile]     = useState(null)
-  const [loading, setLoading]     = useState(!invoice)
-  const [emailModal, setEmailModal] = useState(false)
-  const [emailTo, setEmailTo]     = useState('')
-  const [emailMsg, setEmailMsg]   = useState('')
-  const [sending, setSending]     = useState(false)
+  const [invoice, setInvoice]       = useState(location.state?.invoice ?? null)
+  const [profile, setProfile]       = useState(null)
+  const [loading, setLoading]       = useState(!invoice)
+  const [emailModal, setEmailModal]   = useState(false)
+  const [emailTo, setEmailTo]       = useState('')
+  const [emailMsg, setEmailMsg]     = useState('')
+  const [sending, setSending]       = useState(false)
+  const [payments, setPayments]     = useState([])
+  const [payModal, setPayModal]     = useState(false)
+  const [payAmount, setPayAmount]   = useState('')
+  const [payMethod, setPayMethod]   = useState('cash')
+  const [payNote, setPayNote]       = useState('')
+  const [payLoading, setPayLoading] = useState(false)
+  const isMobile = window.innerWidth < 768
 
   useEffect(() => {
     getProfile().then(setProfile)
+    getPayments(id).then(setPayments).catch(() => {})
     if (!invoice) {
       getInvoice(id).then(inv => { setInvoice(inv); setLoading(false) }).catch(() => setLoading(false))
     } else {
@@ -51,27 +59,44 @@ export default function InvoiceDetail() {
     finally { setSending(false) }
   }
 
+  const doPayment = async () => {
+    if (!payAmount || isNaN(Number(payAmount)) || Number(payAmount) <= 0) { toast.error('Enter a valid amount'); return }
+    setPayLoading(true)
+    try {
+      const result = await addPayment(invoice.id, { amount: payAmount, method: payMethod, note: payNote })
+      setInvoice(p => ({ ...p, status: result.newStatus }))
+      setPayments(p => [{ amount: Number(payAmount), method: payMethod, note: payNote, paid_at: new Date().toISOString() }, ...p])
+      toast.success(`Payment of ${fmt(Number(payAmount))} recorded`)
+      setPayModal(false); setPayAmount(''); setPayNote('')
+    } catch (e) { toast.error(e.message) }
+    finally { setPayLoading(false) }
+  }
+
+  const amountPaid = payments.reduce((s, p) => s + Number(p.amount), 0)
+  const balance    = invoice.total - amountPaid
+  const payPct     = Math.min(100, Math.round((amountPaid / invoice.total) * 100))
+
   const co = profile?.company_name ?? 'Jaila Globals'
-  const statusColors = { paid: ['#D1FAE5','#065F46'], pending: ['#FEF3C7','#92400E'], overdue: ['#FEE2E2','#991B1B'] }
+  const statusColors = { paid: ['#D1FAE5','#065F46'], pending: ['#FEF3C7','#92400E'], overdue: ['#FEE2E2','#991B1B'], 'part-paid': ['#EDE9FE','#5B21B6'] }
   const [sBg, sText] = statusColors[invoice.status] ?? statusColors.pending
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 900, animation: 'fadeIn .2s ease' }}>
+    <div style={{ padding: isMobile ? '16px' : '32px 36px', maxWidth: 900, animation: 'fadeIn .2s ease' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
           <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: C.ink4, marginBottom: 6, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>← Back</button>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: C.ink, fontFamily: "'DM Serif Display', serif" }}>{invoice.num}</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: C.ink, fontFamily: "'DM Serif Display', serif" }}>{invoice.num}</h1>
           <p style={{ fontSize: 13, color: C.ink4, marginTop: 3 }}>{invoice.customer.name} · {fmtD(invoice.date)}</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <Btn variant="outline" icon="📧" onClick={() => setEmailModal(true)}>Email</Btn>
-          <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))}>Download PDF</Btn>
-          <Btn variant="danger" icon="🗑" onClick={doDelete}>Delete</Btn>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {!isMobile && <Btn variant="outline" icon="📧" onClick={() => setEmailModal(true)}>Email</Btn>}
+          <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))}>{isMobile ? 'PDF' : 'Download PDF'}</Btn>
+          {!isMobile && <Btn variant="danger" icon="🗑" onClick={doDelete}>Delete</Btn>}
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: 20 }}>
         {/* Invoice card */}
         <div id="invoice-capture">
           {/* Top banner */}
@@ -187,12 +212,53 @@ export default function InvoiceDetail() {
 
         {/* Sidebar */}
         <div>
+          {/* Payment summary */}
+          <Card style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.ink4, textTransform: 'uppercase', letterSpacing: .6, marginBottom: 12 }}>Payment Tracker</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: C.ink3 }}>Total</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{fmt(invoice.total)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: C.ink3 }}>Paid</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#065F46' }}>{fmt(amountPaid)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontSize: 12, color: C.ink3 }}>Balance</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: balance > 0 ? C.rose2 : C.sage2 }}>{fmt(balance)}</span>
+            </div>
+            {/* Progress bar */}
+            <div style={{ height: 6, background: C.surface3, borderRadius: 4, marginBottom: 12, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${payPct}%`, background: payPct >= 100 ? '#10B981' : '#8B5CF6', borderRadius: 4, transition: 'width .4s' }} />
+            </div>
+            <div style={{ fontSize: 11, color: C.ink4, marginBottom: 14, textAlign: 'right' }}>{payPct}% paid</div>
+            {balance > 0 && (
+              <Btn variant="gold" icon="💳" onClick={() => setPayModal(true)} style={{ width: '100%' }}>Record Payment</Btn>
+            )}
+            {/* Payment history */}
+            {payments.length > 0 && (
+              <div style={{ marginTop: 14, borderTop: `1px solid ${C.surface3}`, paddingTop: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.ink4, textTransform: 'uppercase', letterSpacing: .6, marginBottom: 8 }}>History</div>
+                {payments.map((p, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: C.ink }}>{fmt(p.amount)}</div>
+                      <div style={{ fontSize: 11, color: C.ink4 }}>{p.method} · {new Date(p.paid_at).toLocaleDateString('en-NG', { day: '2-digit', month: 'short' })}</div>
+                      {p.note && <div style={{ fontSize: 11, color: C.ink4, fontStyle: 'italic' }}>{p.note}</div>}
+                    </div>
+                    <span style={{ fontSize: 10, background: C.sage, color: C.sage2, padding: '2px 7px', borderRadius: 10, fontWeight: 700 }}>✓</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
           <Card style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: C.ink4, textTransform: 'uppercase', letterSpacing: .6, marginBottom: 14 }}>Update Status</div>
-            {['pending', 'paid', 'overdue'].map(s => (
+            {['pending', 'part-paid', 'paid', 'overdue'].map(s => (
               <button key={s} onClick={() => changeStatus(s)}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', borderRadius: 8, border: `1.5px solid ${invoice.status === s ? C.navy : C.surface3}`, background: invoice.status === s ? C.navy : C.white, color: invoice.status === s ? C.white : C.ink3, fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 8, textTransform: 'capitalize' }}>
-                <span>{s === 'paid' ? '✅' : s === 'pending' ? '⏳' : '⚠️'}</span> {s}
+                <span>{s === 'paid' ? '✅' : s === 'part-paid' ? '🔄' : s === 'pending' ? '⏳' : '⚠️'}</span> {s}
               </button>
             ))}
           </Card>
@@ -200,13 +266,33 @@ export default function InvoiceDetail() {
           <Card>
             <div style={{ fontSize: 12, fontWeight: 700, color: C.ink4, textTransform: 'uppercase', letterSpacing: .6, marginBottom: 14 }}>Actions</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))} style={{ width: '100%' }}>Print / Save PDF</Btn>
+              <Btn variant="primary" icon="⬇️" onClick={() => downloadInvoice(invoice, document.getElementById('invoice-capture'))} style={{ width: '100%' }}>Download PDF</Btn>
               <Btn variant="outline" icon="📧" onClick={() => setEmailModal(true)} style={{ width: '100%' }}>Email to Customer</Btn>
               <Btn variant="danger" icon="🗑" onClick={doDelete} style={{ width: '100%' }}>Delete Invoice</Btn>
             </div>
           </Card>
         </div>
       </div>
+
+      {/* Payment modal */}
+      <Modal open={payModal} onClose={() => setPayModal(false)} title="Record Part Payment">
+        <div style={{ marginBottom: 4, padding: '10px 14px', background: C.surface2, borderRadius: 8, display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span style={{ fontSize: 13, color: C.ink3 }}>Balance Due</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: C.rose2 }}>{fmt(balance)}</span>
+        </div>
+        <Field label="Amount Paid (₦)" value={payAmount} onChange={setPayAmount} placeholder="e.g. 50000" type="number" required />
+        <Select label="Payment Method" value={payMethod} onChange={setPayMethod} options={[
+          { value: 'cash', label: 'Cash' },
+          { value: 'transfer', label: 'Bank Transfer' },
+          { value: 'pos', label: 'POS / Card' },
+          { value: 'cheque', label: 'Cheque' },
+        ]} />
+        <Field label="Note (optional)" value={payNote} onChange={setPayNote} placeholder="e.g. First instalment" multiline />
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+          <Btn variant="outline" onClick={() => setPayModal(false)}>Cancel</Btn>
+          <Btn variant="gold" icon="💳" onClick={doPayment} loading={payLoading}>Save Payment</Btn>
+        </div>
+      </Modal>
 
       {/* Email modal */}
       <Modal open={emailModal} onClose={() => setEmailModal(false)} title="Email Invoice to Customer">

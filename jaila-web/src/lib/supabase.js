@@ -134,8 +134,34 @@ export async function getDashboardStats() {
     total: all.length, paid: paid.length,
     pending: all.filter(i => i.status === 'pending').length,
     overdue: all.filter(i => i.status === 'overdue').length,
+    partPaid: all.filter(i => i.status === 'part-paid').length,
     revenue: paid.reduce((s, i) => s + Number(i.total), 0),
   }
+}
+
+// ── Payments ──────────────────────────────────────────────────
+export async function getPayments(invoiceId) {
+  const { data, error } = await supabase.from('payments')
+    .select('*').eq('invoice_id', invoiceId).order('paid_at', { ascending: false })
+  handleError('getPayments', error)
+  return data ?? []
+}
+
+export async function addPayment(invoiceId, { amount, method, note }) {
+  const { data: inv } = await supabase.from('invoices').select('total').eq('id', invoiceId).single()
+  const { data: existing } = await supabase.from('payments').select('amount').eq('invoice_id', invoiceId)
+  const alreadyPaid = (existing ?? []).reduce((s, p) => s + Number(p.amount), 0)
+  const newTotal = alreadyPaid + Number(amount)
+  const newStatus = newTotal >= Number(inv.total) ? 'paid' : 'part-paid'
+
+  const { data, error } = await supabase.from('payments').insert({
+    invoice_id: invoiceId, amount: Number(amount), method: method || 'cash', note: note || null,
+    paid_at: new Date().toISOString(),
+  }).select().single()
+  handleError('addPayment', error)
+
+  await supabase.from('invoices').update({ status: newStatus }).eq('id', invoiceId)
+  return { payment: data, newStatus, amountPaid: newTotal }
 }
 
 export async function nextInvoiceNumber() {

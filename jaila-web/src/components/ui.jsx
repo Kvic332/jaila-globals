@@ -79,9 +79,10 @@ export function Card({ children, style, padding }) {
 
 // ── Badge ──────────────────────────────────────────────────────
 const statusMeta = {
-  paid:    { bg: C.sage,  text: C.sage2  },
-  pending: { bg: C.amber, text: C.amber2 },
-  overdue: { bg: C.rose,  text: C.rose2  },
+  paid:      { bg: C.sage,       text: C.sage2  },
+  pending:   { bg: C.amber,      text: C.amber2 },
+  overdue:   { bg: C.rose,       text: C.rose2  },
+  'part-paid': { bg: '#EDE9FE',  text: '#5B21B6' },
 }
 
 export function Badge({ status }) {

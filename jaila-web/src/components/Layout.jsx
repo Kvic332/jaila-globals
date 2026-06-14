@@ -38,6 +38,11 @@ export default function Layout({ children }) {
 
   const co      = profile?.company_name ?? 'Jaila Globals'
   const initial = co.charAt(0).toUpperCase()
+  const isAdmin = profile?.is_admin === true
+  const allNavItems = [
+    ...navItems,
+    ...(isAdmin ? [{ to: '/admin', icon: '🛡️', label: 'Admin' }] : []),
+  ]
 
   const doSignOut = async () => {
     await signOut().catch(() => {})
@@ -70,7 +75,7 @@ export default function Layout({ children }) {
 
         {/* Mobile bottom nav */}
         <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: C.navy, display: 'flex', borderTop: '1px solid rgba(255,255,255,.08)', zIndex: 100 }}>
-          {navItems.map(({ to, icon, label }) => (
+          {allNavItems.map(({ to, icon, label }) => (
             <NavLink key={to} to={to} end={to === '/'}
               style={({ isActive }) => ({
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -123,7 +128,7 @@ export default function Layout({ children }) {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
-          {navItems.map(({ to, icon, label }) => (
+          {allNavItems.map(({ to, icon, label }) => (
             <NavLink key={to} to={to} end={to === '/'}
               style={({ isActive }) => ({
                 display: 'flex', alignItems: 'center', gap: 11,
@@ -134,7 +139,7 @@ export default function Layout({ children }) {
                 fontWeight: 600, fontSize: 13,
                 transition: 'all .15s',
                 backgroundColor: isActive ? 'rgba(212,168,73,.15)' : 'transparent',
-                color: isActive ? C.gold : 'rgba(255,255,255,.55)',
+                color: isActive ? C.gold : to === '/admin' ? 'rgba(252,165,165,.7)' : 'rgba(255,255,255,.55)',
                 borderLeft: isActive ? `3px solid ${C.gold}` : '3px solid transparent',
               })}
             >

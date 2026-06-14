@@ -12,6 +12,7 @@ import History       from './pages/History'
 import Settings      from './pages/Settings'
 import Customers     from './pages/Customers'
 import Inventory     from './pages/Inventory'
+import Admin         from './pages/Admin'
 
 function PrivateRoute({ children }) {
   const [session, setSession] = useState(undefined)
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
         <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+        <Route path="/admin"    element={<PrivateRoute><Admin /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
